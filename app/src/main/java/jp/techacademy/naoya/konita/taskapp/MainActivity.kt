@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         val config0 = RealmConfiguration.Builder()
             .name("default0.realm")
             .schemaVersion(3)
+            .deleteRealmIfMigrationNeeded()
             .build()
 
         mRealm = Realm.getDefaultInstance()
