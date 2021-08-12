@@ -5,13 +5,14 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import io.realm.Realm
 import io.realm.RealmChangeListener
+import io.realm.RealmConfiguration
 import io.realm.Sort
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mRealm: Realm
@@ -34,6 +35,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Realmの設定
+        //val config = RealmConfiguration.Builder(this).deleteRealmIfMigrationNeeded().build()
+        //Realm.setDefaultConfiguration(config)
+
+        val config0 = RealmConfiguration.Builder()
+            .name("default0.realm")
+            .schemaVersion(3)
+            .build()
+
         mRealm = Realm.getDefaultInstance()
         mRealm.addChangeListener(mRealmListener)
 
@@ -86,6 +95,10 @@ class MainActivity : AppCompatActivity() {
             val dialog = builder.create()
             dialog.show()
 
+            filter_button.setOnClickListener { view ->
+                filterListView()
+            }
+
             true
         }
 
@@ -95,6 +108,20 @@ class MainActivity : AppCompatActivity() {
     private fun reloadListView() {
         // Realmデータベースから、「すべてのデータを取得して新しい日時順に並べた結果」を取得
         val taskRealmResults = mRealm.where(Task::class.java).findAll().sort("date", Sort.DESCENDING)
+
+        // 上記の結果を、TaskListとしてセットする
+        mTaskAdapter.mTaskList = mRealm.copyFromRealm(taskRealmResults)
+
+        // TaskのListView用のアダプタに渡す
+        listView1.adapter = mTaskAdapter
+
+        // 表示を更新するために、アダプターにデータが変更されたことを知らせる
+        mTaskAdapter.notifyDataSetChanged()
+    }
+
+    private fun filterListView() {
+        // Realmデータベースから、「カテゴリー」でフィルターする
+        val taskRealmResults = mRealm.where(Task::class.java).contains("category", filter_text.text.toString()).findAll().sort("date", Sort.DESCENDING)
 
         // 上記の結果を、TaskListとしてセットする
         mTaskAdapter.mTaskList = mRealm.copyFromRealm(taskRealmResults)
