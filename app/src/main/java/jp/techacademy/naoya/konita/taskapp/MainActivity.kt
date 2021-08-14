@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
+import android.widget.SearchView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import io.realm.Realm
@@ -34,17 +35,32 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Realmの設定
-        //val config = RealmConfiguration.Builder(this).deleteRealmIfMigrationNeeded().build()
-        //Realm.setDefaultConfiguration(config)
+        search_bar.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextChange(newText: String): Boolean {
+                // text changed
+                return false
+            }
+            override fun onQueryTextSubmit(query: String): Boolean {
+                // submit button pressed
+                filterListView(query)
+                return false
+            }
+        })
 
+        // Realmの設定
+        mRealm = Realm.getDefaultInstance()
+
+        /* realmファイルが残っているときは以下のコードを有効にする
         val config0 = RealmConfiguration.Builder()
-            .name("default0.realm")
-            .schemaVersion(3)
+            .name("default.realm") // デバイス・ファイル・エクスプローラーからtaskappのrealmファイル名を確認してそれを指定する
+            .schemaVersion(7) // realmのスキーマバージョンを合わせる
             .deleteRealmIfMigrationNeeded()
             .build()
 
-        mRealm = Realm.getDefaultInstance()
+        mRealm = Realm.getInstance(config0)
+        // 参考：https://github.com/realm/realm-java/blob/master/examples/migrationExample/src/main/java/io/realm/examples/realmmigrationexample/MigrationExampleActivity.java
+        */
+
         mRealm.addChangeListener(mRealmListener)
 
         // ListViewの設定
@@ -96,10 +112,6 @@ class MainActivity : AppCompatActivity() {
             val dialog = builder.create()
             dialog.show()
 
-            filter_button.setOnClickListener { view ->
-                filterListView()
-            }
-
             true
         }
 
@@ -120,9 +132,9 @@ class MainActivity : AppCompatActivity() {
         mTaskAdapter.notifyDataSetChanged()
     }
 
-    private fun filterListView() {
+    private fun filterListView(text: String) {
         // Realmデータベースから、「カテゴリー」でフィルターする
-        val taskRealmResults = mRealm.where(Task::class.java).contains("category", filter_text.text.toString()).findAll().sort("date", Sort.DESCENDING)
+        val taskRealmResults = mRealm.where(Task::class.java).contains("category", text).findAll().sort("date", Sort.DESCENDING)
 
         // 上記の結果を、TaskListとしてセットする
         mTaskAdapter.mTaskList = mRealm.copyFromRealm(taskRealmResults)

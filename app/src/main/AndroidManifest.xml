@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="jp.techacademy.naoya.konita.taskapp">
 
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".TaskApp"
@@ -12,7 +12,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TaskApp">
-
+        <activity android:name=".FilterActivity"></activity>
         <activity
             android:name=".InputActivity"
             android:label="タスク"
@@ -33,8 +33,7 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".TaskAlarmReceiver"/>
-
+        <receiver android:name=".TaskAlarmReceiver" />
     </application>
 
 </manifest>
